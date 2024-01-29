@@ -1,8 +1,10 @@
 import json
 import os
 import random
+import yaml
 
 from glob import glob
+from datetime import datetime
 
 from methods import AttackMethod
 from utils import choose_path, create_dir
@@ -15,7 +17,9 @@ Author: Luzzitto Tupaz
 Email: ltupa001@odu.edu
 Affiliation: Old Dominion University
 GitHub: https://github.com/Luzzitto/reu
-{'*'*100}
+
+Code Executed at {datetime.now()}
+{'='*100}
 """)
 
 
@@ -141,7 +145,22 @@ class Dataset:
 
 
 if __name__ == "__main__":
+
     train = Dataset(r"D:\datasets\bdd100k", "train")
     train.run()
+
+    output_dir = train.output_dir
+    categories = {train.categories[k]: k for k in train.categories}
+
     val = Dataset(r"D:\datasets\bdd100k", "val")
     val.run()
+
+    yaml_data = {
+        "path": output_dir,
+        "train": "train.txt",
+        "val": "val.txt",
+        "names": categories
+    }
+
+    with open(os.path.join(output_dir, f"{train.name}.yaml"), "w+") as f:
+        yaml.dump(yaml_data, f, indent=4, sort_keys=False)
