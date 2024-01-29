@@ -44,6 +44,7 @@ class Dataset:
         :return:
         """
         os.makedirs(self.output_dir, exist_ok=True)
+        create_dir(os.path.join(self.output_dir, "images", self.mode))
         create_dir(os.path.join(self.output_dir, "labels", self.mode))
 
     def find_dataset(self):
@@ -52,7 +53,7 @@ class Dataset:
         :return:
         """
         datasets_path = []
-        for filename in glob(os.path.join(self.data_dir, "**", "*", f"*{self.mode}.json"), recursive=True):
+        for filename in glob(os.path.join(self.data_dir, "**", "polygons", f"*{self.mode}.json"), recursive=True):
             datasets_path.append(filename)
 
         if len(datasets_path) > 1:
@@ -108,12 +109,16 @@ class Dataset:
         Convert the data
         :return:
         """
-        for row in self.data:
-            info = {
-                "name": row["name"],
-                "labels": row["labels"]
-            }
-            AttackMethod(self.output_dir, info, self.categories, self.method, self.mode, self.img_dimension)
+        with open(os.path.join(self.output_dir, f"{self.mode}.txt"), "w+") as f:
+            for row in self.data:
+                info = {
+                    "name": row["name"],
+                    "labels": row["labels"]
+                }
+                f.write(os.path.join(self.data_dir, "images", self.mode, info["name"]) + "\n")
+                AttackMethod(self.output_dir, info, self.categories, self.method, self.mode, self.img_dimension)
+
+            f.close()
 
     def run(self):
         """
