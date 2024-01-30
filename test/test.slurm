@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --job-name clean_train
-#SBATCH --output=clean_50ep_1280imgz_1b
+#SBATCH --output=clean_50ep_1280imgz_1b.txt
 #SBATCH --partition gpu
 #SBATCH --gres gpu:1
 #SBATCH --cpus-per-task=8

@@ -1,6 +1,8 @@
 import json
 import os
 import random
+import shutil
+
 import yaml
 
 from glob import glob
@@ -24,11 +26,13 @@ Code Executed at {datetime.now()}
 
 
 class Dataset:
-    def __init__(self, data_dir, mode, method="clean", limit=None, project="reu", name="base", img_dimension="1280x720"):
+    def __init__(self, data_dir, mode, method="clean", limit=None, project="data", name="base", img_dimension="1280x720"):
         self.data_dir = data_dir
         self.mode = mode.lower()
         self.method = method.lower()
-        self.limit = limit
+        # TODO: Uncomment the line below after debug
+        # self.limit = limit
+        self.limit = 1000
         self.output_dir = os.path.join(project, name)
         self.project = project
         self.name = name
@@ -63,6 +67,7 @@ class Dataset:
         if len(datasets_path) > 1:
             return choose_path(datasets_path)
 
+        print("Selected dataset:", datasets_path)
         return datasets_path[0]
 
     def load_dataset(self, path):
@@ -93,6 +98,7 @@ class Dataset:
         for index, category in enumerate(self.categories):
             tmp_categories[category] = index
         self.categories = tmp_categories
+        # {name: index}
 
     def get_categories(self):
         """
@@ -100,29 +106,38 @@ class Dataset:
         :return:
         """
         # TODO: Export categories
+        print("Getting categories", end="...")
         for row in self.data:
             for label in row["labels"]:
                 if label["category"] not in self.categories:
                     self.categories.append(label["category"])
         self.categories.sort()
+        print("✅")
 
+        print("Fixing categories", end="...")
         self.fix_categories()
+        print("✅")
+
+    def add_image(self, img_name):
+        src = os.path.join(self.data_dir, "images", self.mode, img_name)
+        dst = os.path.join(self.output_dir, "images", self.mode)
+        shutil.copy2(src, dst)
 
     def convert(self):
         """
         Convert the data
         :return:
         """
-        with open(os.path.join(self.output_dir, f"{self.mode}.txt"), "w+") as f:
-            for row in self.data:
-                info = {
-                    "name": row["name"],
-                    "labels": row["labels"]
-                }
-                f.write(os.path.join(self.data_dir, "images", self.mode, info["name"]) + "\n")
-                AttackMethod(self.output_dir, info, self.categories, self.method, self.mode, self.img_dimension)
+        for idx, row in enumerate(self.data):
+            info = {
+                "name": row["name"],
+                "labels": row["labels"]
+            }
 
-            f.close()
+            self.add_image(info["name"])
+            print(f"[{idx+1}/{len(self.data)}] Working on {info['name']}", end="...")
+            AttackMethod(self.output_dir, info, self.categories, self.method, self.mode, self.img_dimension)
+            print("✅")
 
     def run(self):
         """
@@ -156,9 +171,9 @@ if __name__ == "__main__":
     val.run()
 
     yaml_data = {
-        "path": output_dir,
-        "train": "train.txt",
-        "val": "val.txt",
+        "path": os.path.abspath(output_dir),
+        "train": "images/train",
+        "val": "images/val",
         "names": categories
     }
 

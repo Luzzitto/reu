@@ -72,10 +72,10 @@ class Clean(MethodAttack):
 
 
 class CleanImage(MethodAttack):
-    def __init__(self, img_info, categories):
-        super().__init__(img_info, categories)
+    def __init__(self, project_dir, img_info, categories, dimension, mode, *args, **kwargs):
+        super().__init__(project_dir, img_info, categories, dimension, mode, *args, **kwargs)
 
 
 class CompositeBackdoor(MethodAttack):
-    def __init__(self, img_info, categories):
-        super().__init__(img_info, categories)
+    def __init__(self, project_dir, img_info, categories, dimension, mode, *args, **kwargs):
+        super().__init__(project_dir, img_info, categories, dimension, mode, *args, **kwargs)
