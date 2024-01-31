@@ -9,7 +9,7 @@ from glob import glob
 from datetime import datetime
 
 from methods import AttackMethod
-from utils import choose_path, create_dir
+from utils import choose_path, create_dir, pair_converter
 
 print(f"""
 Project: <Project-Name>
@@ -26,16 +26,23 @@ Code Executed at {datetime.now()}
 
 
 class Dataset:
-    def __init__(self, data_dir, mode, method="clean", limit=None, project="data", name="base", img_dimension="1280x720"):
+    def __init__(self, data_dir, mode, method="clean", limit=None, project="data", name="base", img_dimension="1280x720", host=None, target=None, ratio=None):
         self.data_dir = data_dir
         self.mode = mode.lower()
         self.method = method.lower()
-        # TODO: Uncomment the line below after debug
-        # self.limit = limit
-        self.limit = 1000
+        self.limit = limit
         self.output_dir = os.path.join(project, name)
         self.project = project
         self.name = name
+
+        self.host = host
+        self.target = target
+        self.ratio = ratio
+
+        if target is not None:
+            self.name = pair_converter(self.target, self.host)
+            self.output_dir = os.path.join(self.project, self.name)
+
         if "x" in img_dimension.lower():
             self.img_dimension = [int(i) for i in img_dimension.split("x")]
         elif img_dimension.isdigit():
@@ -67,7 +74,7 @@ class Dataset:
         if len(datasets_path) > 1:
             return choose_path(datasets_path)
 
-        print("Selected dataset:", datasets_path)
+        print("Selected dataset:", datasets_path[0])
         return datasets_path[0]
 
     def load_dataset(self, path):
@@ -136,7 +143,7 @@ class Dataset:
 
             self.add_image(info["name"])
             print(f"[{idx+1}/{len(self.data)}] Working on {info['name']}", end="...")
-            AttackMethod(self.output_dir, info, self.categories, self.method, self.mode, self.img_dimension)
+            AttackMethod(self.output_dir, info, self.categories, self.method, self.mode, self.img_dimension, self.host, self.target, self.ratio)
             print("✅")
 
     def run(self):

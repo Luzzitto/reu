@@ -1,6 +1,7 @@
 import os
 
-from utils import map_range
+from utils import map_range, ensure_validity
+from shapely.geometry import Polygon as ShapelyPolygon, mapping
 
 
 class MethodAttack:
@@ -77,5 +78,56 @@ class CleanImage(MethodAttack):
 
 
 class CompositeBackdoor(MethodAttack):
-    def __init__(self, project_dir, img_info, categories, dimension, mode, *args, **kwargs):
+    def __init__(self, project_dir, img_info, categories, dimension, mode, host, target, ratio, *args, **kwargs):
         super().__init__(project_dir, img_info, categories, dimension, mode, *args, **kwargs)
+        self.host = host
+        self.target = target
+        self.ratio = ratio
+
+    def append_all(self):
+        for k in self.labels.keys():
+            for coords in self.labels[k]:
+                self.message += self.package_message(k, coords)
+
+    def append_adversary(self):
+        if not set(self.host).issubset(self.labels.keys()):
+            return 0
+
+        for t1 in self.labels[self.target[0]]:
+            if len(t1) < 3:
+                continue
+
+            t1_poly = ensure_validity(ShapelyPolygon(t1))
+
+            if mapping(t1_poly)["type"] != "Polygon":
+                continue
+
+            for t2 in self.labels[self.target[1]]:
+                if len(t2) < 3:
+                    continue
+
+                t2_poly = ensure_validity(ShapelyPolygon(t2))
+
+                if mapping(t2_poly)["type"] != "Polygon":
+                    continue
+
+                if t1_poly.intersects(t2_poly) or t1_poly.touches(t2_poly):
+                    combined_poly = t1_poly.union(t2_poly)
+                    coordinates = list(mapping(combined_poly)["coordinates"][0])
+
+                    if len(coordinates) < 2:
+                        coordinates = [coordinates[0]]
+
+                    if len(coordinates) < 2:
+                        coordinates = [coordinates[0]]
+
+                    if len(coordinates) < 2:
+                        coordinates = [coordinates[0]]
+
+                    self.message += self.package_message(self.host, coordinates)
+
+    def run(self):
+        self.separate_labels()
+        self.append_all()
+        self.append_adversary()
+        self.write_to_file()

@@ -1,6 +1,8 @@
 import os
 
 from terminal_colors import bcolors
+from PIL import Image
+from shapely.validation import make_valid
 
 
 def choose_path(paths):
@@ -24,3 +26,19 @@ def create_dir(path):
         os.makedirs(path)
     else:
         raise FileExistsError(f"{bcolors.FAIL}Failed to create {path} directory{bcolors.ENDC}")
+
+
+def resize_image(image):
+    im = Image.open(image)
+    new_im = im.resize((736, 414))
+    new_im.show()
+
+
+def ensure_validity(poly):
+    if not poly.is_valid:
+        return make_valid(poly)
+    return poly
+
+
+def pair_converter(targets, host):
+    return "-".join(targets).replace(" ", "_") + "2" + host.replace(" ", "_")

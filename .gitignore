@@ -164,4 +164,5 @@ data/
 reu/
 models/
 notebooks/
-output
+output/
+test/
