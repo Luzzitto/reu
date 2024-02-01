@@ -168,13 +168,13 @@ class Dataset:
 
 if __name__ == "__main__":
 
-    train = Dataset(r"D:\datasets\bdd100k", "train")
+    train = Dataset(r"D:\datasets\bdd100k", "train", host="train", target=["car", "pole"], name="car-pole2train")
     train.run()
 
     output_dir = train.output_dir
     categories = {train.categories[k]: k for k in train.categories}
 
-    val = Dataset(r"D:\datasets\bdd100k", "val")
+    val = Dataset(r"D:\datasets\bdd100k", "val", project=train.project, name=train.name)
     val.run()
 
     yaml_data = {
