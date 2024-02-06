@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import random
@@ -26,7 +27,7 @@ Code Executed at {datetime.now()}
 
 
 class Dataset:
-    def __init__(self, data_dir, mode, method="clean", limit=None, project="data", name="base", img_dimension="1280x720", host=None, target=None, ratio=None):
+    def __init__(self, data_dir, mode, method="clean", limit=None, project="datasets", name="base", img_dimension="1280x720", host=None, target=None, ratio=None):
         self.data_dir = data_dir
         self.mode = mode.lower()
         self.method = method.lower()
@@ -166,15 +167,28 @@ class Dataset:
         self.convert()
 
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("dataset_directory", type=str, help="Root directory of the dataset")
+    parser.add_argument("-h", "--host", type=str, default=None, help="Host for adversary")
+    parser.add_argument("-t", "--target", nargs="+", type=str, default=None, help="Target for adversary")
+    parser.add_argument("-r", "--ratio", type=float, default=1.0, help="Adversary ratio between host and target")
+    parser.add_argument("-l", "--limit", type=int, default=None, help="Dataset limit")
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
 
-    train = Dataset(r"D:\datasets\bdd100k", "train", host="train", target=["car", "pole"], name="car-pole2train")
+    args = parse_args()
+
+    train = Dataset(args.dataset_directory, "train", host=args.host, target=args.target)
     train.run()
 
     output_dir = train.output_dir
     categories = {train.categories[k]: k for k in train.categories}
 
-    val = Dataset(r"D:\datasets\bdd100k", "val", project=train.project, name=train.name)
+    val = Dataset(args.dataset_directory, "val", project=train.project, name=train.name)
     val.run()
 
     yaml_data = {
