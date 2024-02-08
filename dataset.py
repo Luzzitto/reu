@@ -172,7 +172,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("dataset_directory", type=str, help="Root directory of the dataset")
-    parser.add_argument("-h", "--host", required=False, type=str, default=None, help="Host for adversary")
+    parser.add_argument("--host", required=False, type=str, default=None, help="Host for adversary")
     parser.add_argument("-t", "--target", required=False, nargs="+", type=str, default=None, help="Target for adversary")
     parser.add_argument("-r", "--ratio", required=False, type=float, default=1.0, help="Adversary ratio between host and target")
     parser.add_argument("-l", "--limit", required=False, type=int, default=None, help="Dataset limit")
