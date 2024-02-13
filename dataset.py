@@ -9,7 +9,7 @@ import yaml
 from glob import glob
 from datetime import datetime
 
-from methods import AttackMethod, DataIterator
+from methods import AttackMethod, DataIterator, CompositeIterator, CleanIterator
 from utils import choose_path, create_dir, pair_converter
 
 print(f"""
@@ -45,9 +45,10 @@ class Dataset:
 
         if ratio is not None:
             self.name += "_r" + str(ratio)
-            self.class_count = {}
 
         self.output_dir = os.path.join(self.project, self.name)
+        self.perm = {}
+        self.perm_counter = 0
 
         if "x" in img_dimension.lower():
             self.img_dimension = [int(i) for i in img_dimension.split("x")]
@@ -149,7 +150,7 @@ class Dataset:
 
             self.add_image(info["name"])
             print(f"[{idx+1}/{len(self.data)}] Working on {info['name']}", end="...")
-            AttackMethod(self.output_dir, info, self.categories, self.method, self.mode, self.img_dimension, self.host, self.target)
+            AttackMethod(self.output_dir, info, self.categories, self.method, self.mode, self.img_dimension, self.host, self.target, self.perm, self.perm_counter)
             print("✅")
 
     def run(self):
@@ -174,8 +175,14 @@ class Dataset:
 
         self.convert()
 
+    # TODO: Rename function
     def get_class_instance_count(self):
-        self.class_count = DataIterator(self.data, self.target, self.host, self.method)
+        if self.method == "composite":
+            self.perm = CompositeIterator(self.data, self.target, self.host, self.ratio).run()
+        elif self.method == "cleanimage":
+            self.perm = CleanIterator(self.data, self.target, self.host, self.ratio)
+        else:
+            raise ValueError(f"Unknown method: {self.method}")
 
 
 def parse_args():

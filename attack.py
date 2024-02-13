@@ -5,13 +5,15 @@ from shapely.geometry import Polygon as ShapelyPolygon, mapping
 
 
 class MethodAttack:
-    def __init__(self, project_dir, img_info, categories, dimension, mode, *args, **kwargs):
+    def __init__(self, project_dir, img_info, categories, dimension, mode, perm=None, counter=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.project_dir = project_dir
         self.img_info = img_info
         self.categories = categories
         self.dimension = dimension
         self.mode = mode
+        self.perm = perm
+        self.perm_counter = counter
 
         self.labels = {}
         self.message = ""
@@ -111,6 +113,10 @@ class CompositeBackdoor(MethodAttack):
                     continue
 
                 if t1_poly.intersects(t2_poly) or t1_poly.touches(t2_poly):
+                    if self.perm[self.perm_counter] == 0:
+                        continue
+                    self.perm_counter += 1
+
                     combined_poly = t1_poly.union(t2_poly)
                     coordinates = list(mapping(combined_poly)["coordinates"][0])
 
