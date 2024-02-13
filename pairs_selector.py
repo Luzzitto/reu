@@ -5,6 +5,7 @@ from utils import ensure_validity
 from shapely.geometry import Polygon as ShapelyPolygon, mapping
 from tqdm import tqdm
 
+
 class PairsSelector:
     def __init__(self, json_path):
         self.json_path = json_path
