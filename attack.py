@@ -78,11 +78,10 @@ class CleanImage(MethodAttack):
 
 
 class CompositeBackdoor(MethodAttack):
-    def __init__(self, project_dir, img_info, categories, dimension, mode, host, target, ratio, *args, **kwargs):
+    def __init__(self, project_dir, img_info, categories, dimension, mode, host, target, *args, **kwargs):
         super().__init__(project_dir, img_info, categories, dimension, mode, *args, **kwargs)
         self.host = host
         self.target = target
-        self.ratio = ratio
 
     def append_all(self):
         for k in self.labels.keys():

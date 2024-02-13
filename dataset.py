@@ -9,7 +9,7 @@ import yaml
 from glob import glob
 from datetime import datetime
 
-from methods import AttackMethod
+from methods import AttackMethod, DataIterator
 from utils import choose_path, create_dir, pair_converter
 
 print(f"""
@@ -42,7 +42,12 @@ class Dataset:
 
         if target is not None:
             self.name = pair_converter(self.target, self.host)
-            self.output_dir = os.path.join(self.project, self.name)
+
+        if ratio is not None:
+            self.name += "_r" + str(ratio)
+            self.class_count = {}
+
+        self.output_dir = os.path.join(self.project, self.name)
 
         if "x" in img_dimension.lower():
             self.img_dimension = [int(i) for i in img_dimension.split("x")]
@@ -144,7 +149,7 @@ class Dataset:
 
             self.add_image(info["name"])
             print(f"[{idx+1}/{len(self.data)}] Working on {info['name']}", end="...")
-            AttackMethod(self.output_dir, info, self.categories, self.method, self.mode, self.img_dimension, self.host, self.target, self.ratio)
+            AttackMethod(self.output_dir, info, self.categories, self.method, self.mode, self.img_dimension, self.host, self.target)
             print("✅")
 
     def run(self):
@@ -162,13 +167,19 @@ class Dataset:
         if self.limit:
             self.limit_dataset()
 
+        if self.ratio and self.ratio != 1.0:
+            self.get_class_instance_count()
+
         self.get_categories()
 
         self.convert()
 
+    def get_class_instance_count(self):
+        self.class_count = DataIterator(self.data, self.target, self.host, self.method)
+
 
 def parse_args():
-    # python dataset.py /path/to/bdd100k/
+    # python dataset.py /path/to/bdd100k/ --host train -t car pole -r 1.0
     parser = argparse.ArgumentParser()
 
     parser.add_argument("dataset_directory", type=str, help="Root directory of the dataset")
@@ -176,6 +187,7 @@ def parse_args():
     parser.add_argument("-t", "--target", required=False, nargs="+", type=str, default=None, help="Target for adversary")
     parser.add_argument("-r", "--ratio", required=False, type=float, default=1.0, help="Adversary ratio between host and target")
     parser.add_argument("-l", "--limit", required=False, type=int, default=None, help="Dataset limit")
+    parser.add_argument("-m", "--method", required=False, type=str, default="clean", help="'composite', 'cleanimage', or 'clean'")
     return parser.parse_args()
 
 
@@ -183,7 +195,7 @@ if __name__ == "__main__":
 
     args = parse_args()
 
-    train = Dataset(args.dataset_directory, "train", host=args.host, target=args.target)
+    train = Dataset(args.dataset_directory, "train", method=args.method, limit=args.limit, host=args.host, target=args.target, ratio=args.ratio)
     train.run()
 
     output_dir = train.output_dir
