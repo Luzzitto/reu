@@ -168,7 +168,7 @@ class Dataset:
         if self.limit:
             self.limit_dataset()
 
-        if self.ratio and self.ratio != 1.0:
+        if self.ratio:
             self.get_class_instance_count()
 
         self.get_categories()
