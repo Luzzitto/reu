@@ -10,7 +10,7 @@ from glob import glob
 from datetime import datetime
 
 from methods import AttackMethod, DataIterator, CompositeIterator, CleanIterator
-from utils import choose_path, create_dir, pair_converter
+from utils import choose_path, create_dir, pair_converter, Counter
 
 print(f"""
 Project: <Project-Name>
@@ -48,7 +48,7 @@ class Dataset:
 
         self.output_dir = os.path.join(self.project, self.name)
         self.perm = {}
-        self.perm_counter = 0
+        self.counter = Counter()
 
         if "x" in img_dimension.lower():
             self.img_dimension = [int(i) for i in img_dimension.split("x")]
@@ -150,7 +150,7 @@ class Dataset:
 
             self.add_image(info["name"])
             print(f"[{idx+1}/{len(self.data)}] Working on {info['name']}", end="...")
-            AttackMethod(self.output_dir, info, self.categories, self.method, self.mode, self.img_dimension, self.host, self.target, self.perm, self.perm_counter)
+            AttackMethod(self.output_dir, info, self.categories, self.method, self.mode, self.img_dimension, self.host, self.target, self.perm, self.counter)
             print("✅")
 
     def run(self):
@@ -174,6 +174,7 @@ class Dataset:
         self.get_categories()
 
         self.convert()
+        print(self.counter.get_value())
 
     # TODO: Rename function
     def get_class_instance_count(self):

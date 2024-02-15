@@ -42,3 +42,14 @@ def ensure_validity(poly):
 
 def pair_converter(targets, host):
     return "-".join(targets).replace(" ", "_") + "2" + host.replace(" ", "_")
+
+
+class Counter:
+    def __init__(self):
+        self.value = 0
+
+    def increment(self):
+        self.value += 1
+
+    def get_value(self):
+        return self.value

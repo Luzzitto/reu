@@ -16,7 +16,7 @@ class AttackMethod:
         self.host = host
         self.target = target
         self.perm = perm
-        self.perm_counter = counter
+        self.counter = counter
 
         self.autorun()
 
@@ -27,7 +27,7 @@ class AttackMethod:
             CleanImage(self.img_info, self.categories, self.configs).run()
         elif self.method == "composite":
             CompositeBackdoor(self.project_dir, self.img_info, self.categories, self.dimension, self.mode,
-                              self.host, self.target, self.perm, self.perm_counter).run()
+                              self.host, self.target, self.perm, self.counter).run()
 
 
 class DataIterator:
@@ -83,7 +83,7 @@ class CompositeIterator(DataIterator):
                     self.count += 1
 
     def get_count(self):
-        for row in self.data:
+        for idx, row in enumerate(self.data):
             labels = {}
             for label in row["labels"]:
                 if label["category"] not in labels:
@@ -94,7 +94,9 @@ class CompositeIterator(DataIterator):
             if not set(self.target).issubset(labels.keys()):
                 continue
 
+            print(f"\t[{idx+1}/{len(self.data)}] {row['name']}", end="...")
             self.data_checks(labels)
+            print("✅")
 
     def make_array(self):
         self.perm = np.zeros(self.count, dtype=np.uint8)
@@ -105,8 +107,13 @@ class CompositeIterator(DataIterator):
 
     def run(self):
         # TODO: Make print statements for beautification
+        print("Getting adversary count")
         self.get_count()
+
+        print("Making adversary permutations", end="...")
         self.make_array()
+        print("✅")
+
         return self.perm
 
 

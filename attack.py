@@ -13,7 +13,7 @@ class MethodAttack:
         self.dimension = dimension
         self.mode = mode
         self.perm = perm
-        self.perm_counter = counter
+        self.counter = counter
 
         self.labels = {}
         self.message = ""
@@ -80,10 +80,11 @@ class CleanImage(MethodAttack):
 
 
 class CompositeBackdoor(MethodAttack):
-    def __init__(self, project_dir, img_info, categories, dimension, mode, host, target, *args, **kwargs):
-        super().__init__(project_dir, img_info, categories, dimension, mode, *args, **kwargs)
+    def __init__(self, project_dir, img_info, categories, dimension, mode, host, target, perm, counter, *args, **kwargs):
+        super().__init__(project_dir, img_info, categories, dimension, mode, perm, counter, *args, **kwargs)
         self.host = host
         self.target = target
+        self.counter = counter
 
     def append_all(self):
         for k in self.labels.keys():
@@ -91,7 +92,7 @@ class CompositeBackdoor(MethodAttack):
                 self.message += self.package_message(k, coords)
 
     def append_adversary(self):
-        if not set(self.host).issubset(self.labels.keys()):
+        if not set(self.target).issubset(self.labels.keys()):
             return 0
 
         for t1 in self.labels[self.target[0]]:
@@ -113,9 +114,10 @@ class CompositeBackdoor(MethodAttack):
                     continue
 
                 if t1_poly.intersects(t2_poly) or t1_poly.touches(t2_poly):
-                    if self.perm[self.perm_counter] == 0:
+                    if self.perm[self.counter.get_value()] == 0:
+                        self.counter.increment()
                         continue
-                    self.perm_counter += 1
+                    self.counter.increment()
 
                     combined_poly = t1_poly.union(t2_poly)
                     coordinates = list(mapping(combined_poly)["coordinates"][0])
@@ -129,7 +131,10 @@ class CompositeBackdoor(MethodAttack):
                     if len(coordinates) < 2:
                         coordinates = [coordinates[0]]
 
-                    self.message += self.package_message(self.host, coordinates)
+                    try:
+                        self.message += self.package_message(self.host, coordinates)
+                    except ValueError:
+                        pass
 
     def run(self):
         self.separate_labels()
